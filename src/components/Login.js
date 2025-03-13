@@ -1,35 +1,50 @@
 import React, { useState } from "react";
-import Navbar from "./Navbar"; 
- 
+import axios from "axios";
 
 const Login = ({ onNavigate }) => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    rememberMe: false,
   });
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Login successful!");
-    onNavigate("home");
+    setError(""); // Clear previous errors
+
+    try {
+      const response = await axios.post("http://localhost:8080/api/login", {
+        email: formData.email,
+        password: formData.password,
+      });
+
+      alert("Login successful!");
+      console.log("User Data:", response.data); // You can store this in state or context
+      onNavigate("home"); // Navigate to home page after successful login
+    } catch (error) {
+      console.error("Login failed:", error.response?.data || "Error");
+      setError(error.response?.data || "Invalid credentials");
+    }
   };
 
   return (
     <div>
-     
       <div style={containerStyle}>
         <div style={cardStyle}>
           <h3 style={{ color: "#DF7F13" }}>Login</h3>
-          <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
+          {error && <p style={{ color: "red" }}>{error}</p>}
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column" }}
+          >
             <input
               type="email"
               name="email"
@@ -68,7 +83,7 @@ const containerStyle = {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
-  height: "calc(100vh - 60px)", 
+  height: "calc(100vh - 60px)",
   backgroundColor: "#f8f9fa",
 };
 
